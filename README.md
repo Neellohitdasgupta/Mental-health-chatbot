@@ -1,7 +1,7 @@
 # Mental Health Support Chatbot
 
 ## 🤗 Live
-**[View Live](https://neellohitdasgupta.github.io/mental-health-chatbot/)**
+**[View Live](https://neellohitdasgupta.github.io/Mental-health-chatbot/)**
 
 ## Overview
 An intelligent mental health support chatbot that provides empathetic conversations and crisis intervention. This project showcases advanced NLP capabilities, intent recognition, and resource recommendations for mental health support.
@@ -231,3 +231,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 *Built with 💙 to provide support and hope to those who need it most*
+
