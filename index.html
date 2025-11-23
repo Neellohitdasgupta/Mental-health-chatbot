@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Support Chatbot Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .disclaimer {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px;
+            color: white;
+            text-align: center;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            max-height: 500px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: #4CAF50;
+        }
+        
+        .message.bot .message-avatar {
+            background: #2196F3;
+        }
+        
+        .message-content {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 70%;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        .message.user .message-content {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .message.bot .message-content {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .message-input {
+            flex: 1;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .send-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .send-button:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #2196F3;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .resources-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            color: white;
+            display: none;
+        }
+        
+        .resources-panel h3 {
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+        
+        .resource-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .resource-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .resource-item h4 {
+            margin-bottom: 5px;
+            color: #87CEEB;
+        }
+        
+        .resource-item p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .resource-link {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .resource-link:hover {
+            text-decoration: underline;
+        }
+        
+        .navigation {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+        }
+        
+        .quick-responses {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .chat-container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤗 Mental Health Support Chatbot</h1>
+        <p>A safe space for support and conversation</p>
+    </div>
+    
+    <div class="disclaimer">
+        <strong>⚠️ Important:</strong> This chatbot provides support and information but is not a replacement for professional mental health care. 
+        If you're in crisis, please contact emergency services (911) or the National Suicide Prevention Lifeline (988) immediately.
+    </div>
+    
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    Hello! I'm here to provide support and listen to you. This is a safe, judgment-free space where you can share your thoughts and feelings. How are you doing today?
+                </div>
+            </div>
+        </div>
+        
+        <div class="quick-responses">
+            <button class="quick-btn" onclick="sendQuickMessage('I\'m feeling anxious')">😰 Feeling anxious</button>
+            <button class="quick-btn" onclick="sendQuickMessage('I\'m sad today')">😢 Feeling sad</button>
+            <button class="quick-btn" onclick="sendQuickMessage('I need coping strategies')">🛠️ Need help</button>
+            <button class="quick-btn" onclick="sendQuickMessage('I feel lonely')">😔 Feeling lonely</button>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" class="message-input" id="messageInput" 
+                   placeholder="Type your message here..." maxlength="500">
+            <button class="send-button" id="sendButton" onclick="sendMessage()">
+                ➤
+            </button>
+        </div>
+        
+        <div class="resources-panel" id="resourcesPanel">
+            <h3>📚 Helpful Resources</h3>
+            <div id="resourcesList"></div>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <a href="https://github.com/Neellohitdasgupta/mental-health-chatbot" target="_blank" class="nav-link">💻 Source Code</a>
+        <a href="../../index.html" class="nav-link">🏠 Back to Portfolio</a>
+    </div>
+    
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const resourcesPanel = document.getElementById('resourcesPanel');
+        const resourcesList = document.getElementById('resourcesList');
+        
+        // Mental health response patterns
+        const responses = {
+            anxiety: [
+                "I understand you're feeling anxious. That's completely valid. Try taking slow, deep breaths. Would you like to talk about what's causing these feelings?",
+                "Anxiety can be overwhelming. Remember that you're not alone. Let's try a grounding technique: name 5 things you can see around you.",
+                "It's okay to feel anxious. These feelings are temporary. Would you like some coping strategies that might help?"
+            ],
+            depression: [
+                "I'm sorry you're going through this difficult time. Your feelings are valid, and you matter. Have you been able to talk to anyone about how you're feeling?",
+                "Depression can make everything feel heavy. Please know that you're not alone and that things can get better. What's one small thing that usually brings you comfort?",
+                "Thank you for sharing something so personal. It shows strength. Have you considered reaching out to a mental health professional?"
+            ],
+            crisis: [
+                "I'm very concerned about you. Please reach out to a crisis helpline immediately: National Suicide Prevention Lifeline: 988. You matter and help is available.",
+                "Your life has value and meaning. Please contact emergency services (911) or the Crisis Text Line (text HOME to 741741) right now. You don't have to go through this alone."
+            ],
+            coping: [
+                "Here are some coping strategies: deep breathing, mindfulness meditation, gentle exercise, journaling, or talking to someone you trust. What resonates with you?",
+                "Coping strategies that many find helpful include: progressive muscle relaxation, grounding techniques, creative activities, or spending time in nature. Would you like me to explain any of these?"
+            ],
+            support: [
+                "Feeling alone can be really painful. You're not truly alone - I'm here, and there are people who care. Have you considered joining a support group or reaching out to friends/family?",
+                "Isolation can make everything feel worse. You've taken a brave step by reaching out here. What connections in your life feel most supportive?"
+            ],
+            greeting: [
+                "Hello! I'm here to listen and support you. How are you feeling today?",
+                "Hi there! I'm glad you reached out. What's on your mind?",
+                "Hello! Welcome to our safe space. How can I help you today?"
+            ],
+            default: [
+                "I hear you. Can you tell me more about what you're experiencing?",
+                "That sounds difficult. I'm here to listen. What's been the hardest part?",
+                "Thank you for sharing that with me. How long have you been feeling this way?",
+                "It takes courage to talk about these things. What kind of support would be most helpful right now?"
+            ]
+        };
+        
+        const resources = {
+            crisis: [
+                {
+                    title: "National Suicide Prevention Lifeline",
+                    description: "24/7 crisis support",
+                    url: "tel:988"
+                },
+                {
+                    title: "Crisis Text Line",
+                    description: "Text-based crisis support",
+                    url: "sms:741741"
+                }
+            ],
+            anxiety: [
+                {
+                    title: "Headspace",
+                    description: "Meditation and mindfulness app",
+                    url: "https://headspace.com"
+                },
+                {
+                    title: "Anxiety and Depression Association",
+                    description: "Resources and support for anxiety",
+                    url: "https://adaa.org"
+                }
+            ],
+            depression: [
+                {
+                    title: "Psychology Today",
+                    description: "Find a therapist directory",
+                    url: "https://psychologytoday.com"
+                },
+                {
+                    title: "NAMI",
+                    description: "National Alliance on Mental Illness",
+                    url: "https://nami.org"
+                }
+            ],
+            support: [
+                {
+                    title: "7 Cups",
+                    description: "Free emotional support",
+                    url: "https://7cups.com"
+                },
+                {
+                    title: "Mental Health America",
+                    description: "Mental health resources and support",
+                    url: "https://mhanational.org"
+                }
+            ]
+        };
+        
+        // Handle Enter key
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        function detectIntent(message) {
+            const text = message.toLowerCase();
+            
+            // Crisis keywords (highest priority)
+            if (text.includes('suicide') || text.includes('kill myself') || text.includes('end it all') || 
+                text.includes('not worth living') || text.includes('hurt myself')) {
+                return 'crisis';
+            }
+            
+            // Anxiety keywords
+            if (text.includes('anxious') || text.includes('anxiety') || text.includes('worried') || 
+                text.includes('nervous') || text.includes('panic') || text.includes('stress') || 
+                text.includes('overwhelmed')) {
+                return 'anxiety';
+            }
+            
+            // Depression keywords
+            if (text.includes('depressed') || text.includes('depression') || text.includes('sad') || 
+                text.includes('hopeless') || text.includes('empty') || text.includes('worthless') || 
+                text.includes('down')) {
+                return 'depression';
+            }
+            
+            // Coping keywords
+            if (text.includes('coping') || text.includes('strategies') || text.includes('help') || 
+                text.includes('techniques') || text.includes('manage') || text.includes('deal with')) {
+                return 'coping';
+            }
+            
+            // Support keywords
+            if (text.includes('lonely') || text.includes('alone') || text.includes('isolated') || 
+                text.includes('no one understands') || text.includes('support')) {
+                return 'support';
+            }
+            
+            // Greeting keywords
+            if (text.includes('hello') || text.includes('hi') || text.includes('hey') || 
+                text.includes('good morning') || text.includes('good afternoon')) {
+                return 'greeting';
+            }
+            
+            return 'default';
+        }
+        
+        function getResponse(intent) {
+            const responseArray = responses[intent] || responses.default;
+            return responseArray[Math.floor(Math.random() * responseArray.length)];
+        }
+        
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = isUser ? '👤' : '🤖';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            typingDiv.style.display = 'flex';
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        function displayResources(intent) {
+            const resourceData = resources[intent];
+            if (resourceData && resourceData.length > 0) {
+                resourcesList.innerHTML = resourceData.map(resource => `
+                    <div class="resource-item">
+                        <h4>${resource.title}</h4>
+                        <p>${resource.description}</p>
+                        <a href="${resource.url}" target="_blank" class="resource-link">Access Resource →</a>
+                    </div>
+                `).join('');
+                resourcesPanel.style.display = 'block';
+            }
+        }
+        
+        function sendQuickMessage(message) {
+            messageInput.value = message;
+            sendMessage();
+        }
+        
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Disable input
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+            
+            // Add user message
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate processing delay
+            setTimeout(() => {
+                hideTypingIndicator();
+                
+                // Detect intent and get response
+                const intent = detectIntent(message);
+                const response = getResponse(intent);
+                
+                // Add bot response
+                addMessage(response);
+                
+                // Display relevant resources
+                displayResources(intent);
+                
+                // Re-enable input
+                sendButton.disabled = false;
+                messageInput.disabled = false;
+                messageInput.focus();
+            }, 1500 + Math.random() * 1000); // 1.5-2.5 seconds
+        }
+        
+        // Focus on input when page loads
+        window.addEventListener('load', () => {
+            messageInput.focus();
+        });
+        
+        console.log('🤗 Mental Health Support Chatbot Demo loaded successfully!');
+    </script>
+</body>
+</html>
